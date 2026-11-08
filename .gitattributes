@@ -1,0 +1,19 @@
+* text=auto
+
+# Preserve the original release files byte-for-byte.
+original/readme.txt -text
+original/game.ini.orig -text
+original/data/*.dat binary
+original/map/*mpi binary
+build/data/*.dat binary
+build/map/*mpi binary
+
+# Binary game assets and executables.
+*.bmp binary
+*.BMP binary
+*.ico binary
+*.exe binary
+*.dll binary
+*.wav binary
+*.mid binary
+*.map binary

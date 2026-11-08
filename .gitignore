@@ -1,0 +1,17 @@
+# Local reverse-engineering workspace (Ghidra project). Not for upload.
+analysis/
+
+# Build intermediates
+recreated/bgw_res.o
+recreated/src/*.o
+recreated/bgw_prototype.exe
+
+# Runtime logs and state
+*.log
+bgw_debug.log
+
+# Editor / OS clutter
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

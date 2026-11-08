@@ -1,0 +1,223 @@
+BGW (爆弾モグラ退治 / "Bomb Mogura Extermination") — source recovery
+====================================================================
+
+TARGET
+  original\bgw.exe
+  Delphi / Borland Win32 PE32 (i386), image base 0x400000, size ~421 KB,
+  no ASLR, entry point 0x457AD4.  Built with the "Quadruple D" (QD) Delphi
+  DirectX library.
+  original\bgw-pristine.exe  pristine 2001 binary (reference for reconstructed logic)
+  original\bgw.exe           working copy with the four Win11 fixups below
+  The fixups do not change rendering: menu, option, and ranking frames were
+  captured from both binaries and match the native target with 0 px difference.
+
+RUNTIME
+  Renderer : DirectDraw (ddraw.dll), 320x240, palette/surface model.
+  Audio    : DirectSound (dsound.dll) + bundled Kbgm32.dll (MIDI BGM).
+  Input    : DInput + TKbgm/TDDIDEX (keyboard + joystick).
+  Assets   : bmp\ data\ map\ midi\ wav\  (midi: init, main, miss, gameover,
+             rank, clear — see TFrm_main.dfm AutoLoadMidis).
+
+FORM  (only one real form; recovered -> recreated\docs\TFrm_main.dfm)
+  Frm_main: TFrm_main  320x240, BorderStyle=bsSingle, captioned 爆弾モグラ退治
+    DDDD1:      TDDDD        (DirectDraw surface; OnInit = DDDD1Init)
+    Joy:        TDDIDEX      (input)
+    KbgmPlayer1:TKbgmPlayer  (MIDI BGM)
+    DDSD1:      TDDSD        (DirectSound)
+  Event handlers known: FormKeyDown, FormDestroy, DDDD1Init.
+  App/RTTI classes recovered -> recreated\docs\rtti_names.txt (TGmObj = game object,
+  TDDDD/TDDIDEX4/TDDSD/TKbgmPlayerDVD, TMainMenux, TDDDDSprite ...).
+
+KEY CODE ADDRESSES (VA; CODE fileOff = VA - 0x400C00)
+  Gameplay update routine .......... VA 0x45446C (registered at [obj+0xD8])
+  State dispatch (jump table) ...... VA 0x454535   state = *[0x45A310]
+    states: 0 menu-init -> 1 menu;  {2,3,4,5} gameplay/level-intro/miss/gameover;
+            6 rank/name-entry; 7 result; 8 continue (never selected);
+            9 clear/midi-wait; 10 bonus/scoreboard; 99 exit
+  Frame limiter (timeGetTime loop) .. VA 0x454C99  (16 ms busy-wait, gated on
+                                      SOFTWARE VSYNC +0x32C at VA 0x454CA0; with
+                                      it off the shipped loop free-runs ~125 fps)
+  ESC / key handler ................. VA 0x456EE8
+  Music "still playing?" gate ....... VA 0x44654C
+  Key globals: state 0x45A310->0x46C958, ctr 0x45A0C8->0x45B930,
+               difficulty 0x45A484->0x472288, input obj 0x45A0E4->0x46C96C.
+
+PATCHES ALREADY APPLIED TO bgw.exe (Win11 fixups)
+  file 0x55216  75 -> EB        force windowed (fix fullscreen fail)
+  file 0x553DB  7D -> 7F        gamelv=0 difficulty clamp (fix GAME START crash)
+  file 0x540A0  75 32 -> 90 90  frame limiter always-on (fix ~25% fast speed)
+  file 0x56336  63 -> 00        (in C7 00 63 00 00 00 at 0x56334)
+                                ESC -> menu (not the EXIT ESC KEY dialog)
+  original\bgw.exe carries these fixups; original\bgw-pristine.exe is the
+  untouched 2001 binary.
+
+NATIVE RECONSTRUCTION STATUS (2026-10-25)
+  Target : recreated\src\*.cpp -> build\bgw_native.exe
+           build: powershell -ExecutionPolicy Bypass -File recreated\build-win32.ps1
+  Icon   : src\bgw.rc + src\bgw.ico, the original bgw.exe RT_GROUP_ICON
+           "MAINICON" (32x32, 4bpp), used as the large and small window icon.
+  Size   : build-win32.ps1 uses -Os -s -ffunction-sections -fdata-sections
+           -Wl,--gc-sections. The unstripped COFF symbol/string table (~2.09 MB)
+           and DWARF sections are removed, so the final exe is ~1.05 MB instead
+           of 3.35 MB. The rest is the static C++ runtime and x64 unwind tables;
+           the original is a 421 KB 32-bit Delphi executable.
+  Docs   : recreated\docs\NATIVE_STATUS.md (architecture and evidence)
+  State  : every reachable screen renders pixel-identically to bgw.exe:
+           title/menu, option page (EASY / BUTTON 0 / wait OFF / vsync OFF),
+           menu ranking, gameplay field + HUD, miss and GAME OVER on timer
+           expiry, name entry, rank display, and the state-10 clear/scoreboard
+           (initial hold, 100-point count-up, post-count hold).
+           Comparison method: DPI-unaware BitBlt of the game's client DC gives
+           640x480 = an exact 2x copy of 320x240; a pixel differs when
+           |dR|+|dG|+|dB| > 20.  Menu screens were verified at 0 px against
+           both original\bgw.exe and original\bgw-pristine.exe.
+  States : 2 level banner, 3 play, 4 miss, 5 game over, 6 name entry,
+           7 ranking, 8 continue (unreachable; overlay without clearing),
+           9 clear/midi wait, 10 bonus/scoreboard, 99 exit.
+  Timer  : 99 units, one per 0x78 frames, only in states 2/3; 0 -> state 4.
+  Bonus  : breakableCount*100*difficulty + timeRemaining*100, paid at 100 per
+           frame after a 0x78 hold, then a 0x4b0 hold before score insertion.
+  Rank   : insertRankScore/writeRankNameByte only touch memory; the file write
+           happens after the main loop, so only a graceful WM_CLOSE saves
+           data\rank.dat.  Clean shutdown rewrites it byte-identically.
+  Data   : pristine rank.dat = 34300 "KRI" + nine zero records, md5
+           5a1d1c1d0b05dc69a1c4016487ae37d2 (original\data and build\data).
+  Hooks  : --shot=<dir> [--shot-every=N], --state=N, --rank=i,len, --time=N,
+           --spawnx=N/--spawny=N, --fast-time, --log.
+  Scratch ground-truth binaries were removed after use; each differs from the
+  working bgw.exe by one byte:
+           fast timer   : file 0x5486F  0x78 -> 0x01
+           state 10 miss: file 0x53C29  0x03 -> 0x0A
+
+GAMEPLAY FIXES (2026-11-07, real-play defects)
+  1. Upward-progress slowdown. The type-1 player path had been running the
+     generic collision/effect spawn every frame, and types 3/4 never
+     deactivated, so effect slots leaked and break.wav replayed continuously.
+     Type 1 now does no generic collision/spawn; type 3 deactivates after its
+     0x3c cooldown (FUN_00454214) and type 4 after +0x18 exceeds 1. A 36-frame
+     standing contact now yields exactly 4 chunks and 4 break.wav requests; a
+     20 s live run stayed at ~63 frames/s with at most 8 chunks / 1 popup.
+     Type-2 chunks are cull-exempt (+0x28 = 1) and never deactivate, so drawFrame
+     now skips entity blits fully outside the 320x240 client; GDI clips them
+     anyway, so the output is unchanged (25/25 fixture frames pixel-identical).
+  2. Timed-wall animation. advanceAnimatedTile now matches FUN_00452774: one
+     shared +0x40 counter incremented once per frame for any solid sampled
+     column, never reset by walking between columns, reset only on a
+     transition; thresholds >8 / >4 / >2; leftmost column first; at most one
+     transition per frame; chains 4..7, 8..11, 12..15 each end in clear; each
+     transition spawns the type-2 chunk at (col*32+16, playerY+32) with
+     animFrame = value-4. Native transitions land at 9-frame intervals and the
+     counter survives a column change.
+  3. Collectables. drawMap uses TransparentBlt with a black color key (item
+     tiles now match the original capture at 0 differing pixels). Collection
+     spawns the type-3 popup at the tile centre with animFrame = scoreIndex,
+     awards 100/500/1000 through the 16-frame streak timer, plays get.wav, and
+     the popup blinks and expires after 60 frames. Original capture shows the
+     100/500 sequence and HUD 600 -> 700; native chr004 frames reproduce the
+     exact 83/85/111 white/pink pixel counts.
+  Evidence details are in NATIVE_STATUS.md under "Gameplay behavior fixes".
+
+DIFFICULTY AND TIMING FIXES (2026-11-08)
+  4. NORMAL/HARD played like EASY. The level remap (FUN_00456BB4) ran once at
+     startup and startNewGame copied the already-remapped map, so the option
+     page's GAME LEVEL never reached the map. App::initialTiles now holds the
+     pristine map and startNewGame resets from it and calls
+     applyLevelRemap(stateMachine.difficulty()) each run, matching the shipped
+     reload (FUN_004562F4) + timed-wall remap (FUN_00456D92) per game start.
+     Menu-driven capture counts (blue/green/red pixels): EASY 2625/0/72,
+     NORMAL 2330/295/72, HARD 0/0/2697; EASY and HARD equal the original.
+  5. Game speed / frame rate. The 16 ms busy-wait in FUN_00454535 is gated on
+     SOFTWARE VSYNC (+0x32C); the shipped jne at VA 0x454CA0 skips it when the
+     flag is off, so with both options off the loop free-runs at ~125 fps.
+     Because physics and animation are per-frame, that ran the game at about
+     double its 60 fps design; the 0x78 = 120-frame TIME unit is ~1 s only as a
+     side effect of the high rate (the unpatched original ticks ~0.97 s). The
+     native now locks the Win32 loop to 60 fps with a repeating 16/17/17 ms
+     schedule (16.667 ms average). The TIME threshold is 60 frames (0x3B with
+     the pre-increment compare) so it still advances once per second at the
+     lower rate. Verified with a client-DC probe: TIME digits change every
+     1.01 s (~60 frames), i.e. the logic runs at ~59.5 Hz.
+     GameStateMachine::finishFrame no longer busy-waits.
+  6. Settings persistence. The shipped FormDestroy (VA 0x456F7C) writes
+     [button] shot/dash, [env] softvsync/waitvsync/debugflg/gamelv and
+     data\rank.dat only on a graceful close. The native now writes game.ini the
+     same way (in-place update, shot/dash appended after the last [button] key,
+     unknown sections preserved, live gamelv) before writeRankFile. Verified
+     against the original's round-trip; selecting HARD then closing writes
+     gamelv=3; a forced kill leaves game.ini untouched.
+
+DECOMPILATION ENVIRONMENT (REA + Ghidra, set up 2026-10)
+  Node 24 : C:\Users\krix\tools\node-v24.21.0-win-x64\node.exe   (system Node 25
+            is rejected by REA; registration hard-codes this Node)
+  REA CLI : C:\Users\krix\tools\rea\node_modules\rea-agents\scripts\rea.mjs (v4.0.1)
+  Ghidra  : C:\Users\krix\tools\ghidra_12.1.4_PUBLIC   (env GHIDRA_INSTALL_DIR)
+  JDK 21  : C:\Users\krix\tools\jdk-21.0.12.1+1        (env JAVA_HOME)
+  Registered as MCP server "rea" in C:\Users\krix\.config\opencode\opencode.jsonc
+  (rea doctor --client opencode = healthy; provider ghidra configured+available).
+
+RECOVERY METHOD (as actually used)
+  REA's MCP provider never came up in this environment, so the analysis ran on
+  the local Ghidra project and its exported decompilation instead:
+    analysis\ghidra-project\BGW analyzed PE database (local, git-ignored)
+    recreated\docs\decomp*.txt  exported pseudo-code per routine
+    C:\mingw64\bin\objdump.exe  instruction-level checks of patched bytes
+    recreated\docs\*.txt        anchors and structure notes
+  Workflow: decompile a routine -> reimplement it in C++ under recreated\src ->
+  build bgw_native.exe -> capture the original and the native with the same
+  key sequence -> pixel-compare -> fix only what the evidence shows.
+  Remaining work, if any, is outside rendering: audio timing and the web port.
+
+CURRENT RECOVERY OUTPUT
+  decomp.txt         Ghidra decompilation of the central state/update routine,
+                     keyboard handler, score insertion, and rank-name input.
+  decomp_helpers.txt Ghidra decompilation of menu, reset, object setup, score
+                     display, sprite update, input, text, and MIDI helpers.
+  src/game_state.*   Recovered state machine: menu/option navigation, all
+                     reachable states (2-7, 9, 10), timer, rank insertion.
+  src/windows_main.cpp
+                     Win32 presentation layer: GDI in place of DirectDraw, all
+                     screen rendering, input, MCI midi, rank I/O, test hooks.
+  src/data_layout.h  Partial recovered layouts for the 0x200-entry entity pool,
+                     ten-entry score table, and tile-map/sprite coordinates.
+  src/entity_behavior.* Recovered mode 1-4 entity update layer and pool.
+  build\bgw_native.exe
+                       Win32 reconstruction; built by build-win32.ps1. See
+                       NATIVE_STATUS.md for architecture and verification.
+  web/                 Dependency-free Canvas browser port using original BMP
+                        and WAV assets. Start with `node web/server.mjs`, then
+                        open http://127.0.0.1:8123/web/.
+  recreated\bgw_prototype.exe
+                       Native console prototype; loads original asset data and
+                       drives the reconstructed startup state machine.
+  Build check        C:\mingw64\bin\g++.exe 15.2.0 compiles game_state.cpp
+                     and entity_behavior.cpp with -std=c++17 -Wall -Wextra
+                     -pedantic.
+  Ghidra project     ghidra-project\BGW contains the analyzed PE database.
+
+Ghidra observations
+  Ghidra selected x86:LE:32:default:borlanddelphi. The recovered central
+  routine is FUN_00454535 and contains the state dispatch plus frame limiter.
+  State 2 draws the LEVEL banner and advances to state 3 after 0x78 frames;
+  states 2-5 share the object-update path. State 4 starts midi\miss and waits
+  for completion; state 5 starts midi\gameover and invokes score insertion.
+  FUN_0045552C is the menu/settings handler; FUN_004562F4 resets game state;
+  FUN_00454DB8 is the scoreboard/countdown path; FUN_00456EE8 is FormKeyDown.
+  FUN_00453224 is the player tile-collision path: tile 2 adds a data-driven
+  score and spawns an effect; tile 3 enters state 9 and plays midi\clear.
+
+Recent entity/map observations
+  PTR_DAT_0045A498 points to the 0x34-byte entity-type table at 0x459F4C.
+  FUN_00453E50 dispatches only types 1 through 4: type 1 is the player;
+  types 2, 3, and 4 are falling, delayed, and animated collision/effect
+  entities. No ordinary enemy update routine has been recovered.
+  The type-1 table record contains 40x40 dimensions. FUN_00454535 spawns the
+  player as type 1 at fixed-point coordinates (0x1000, 0x1640) = (128,178).
+  The breakable score table is at 0x459F1C and contains 100, 500, 1000;
+  FUN_00453224 uses these sequentially, clamping to the final value.
+  The map is a 13-column by 256-row vertical shaft (see NATIVE_STATUS.md); the
+  goal tile 3 sits near column 10, row 6. Native completion is triggered by
+  tile collision, not by reaching an edge.
+  FUN_00453B64 converts horizontal input to direction << 6 fixed-point units,
+  equivalent to 2 pixels per 16 ms frame. The jump branch starts at -0x100 fixed
+  units (-8 pixels/frame) and the full routine is reconstructed: gravity, the
+  0xc0 (6 pixels/frame) downward cap, jump-energy scaling, and the ground-puff.
