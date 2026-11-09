@@ -76,6 +76,7 @@ Keep the asset folders next to the executable:
 ```
 build\
 ├── bgw.exe
+├── readme.txt
 ├── game.ini
 ├── bmp\  data\  map\  midi\  wav\
 ```
