@@ -48,8 +48,8 @@ are saved to `game.ini` and `data\rank.dat` when the game closes normally.
 ```
 BGW/
 ├── README.md
-├── original/     Original 2001 release: reference executables, DLLs,
-│                 readme, and the pristine BMP/data/map/MIDI/WAV assets.
+├── original/     Untouched original 2001 release: bgw.exe, DLLs, game.ini,
+│                 readme, and the original BMP/data/map/MIDI/WAV assets.
 ├── recreated/    Reconstructed C++ sources, build scripts, and analysis docs.
 │   ├── src/
 │   ├── docs/
@@ -86,10 +86,16 @@ restores the defaults. The first launch is windowed with EASY selected.
 
 ### Original game
 
-`original\bgw.exe` is the working 2001 binary with the four small Windows 11
-compatibility fixups documented in `recreated\docs\NOTES.txt`. Run it from
-inside `original\` so it can find its assets. `original\bgw-pristine.exe` is the
-untouched release binary, kept as the ground-truth reference.
+`original\` is preserved exactly as it was before this project and is never
+modified by the reconstruction. `original\bgw.exe` is the untouched 2001 release
+binary and `original\game.ini` is its default configuration.
+
+The original game has four Windows 11 compatibility problems (fullscreen init,
+the `gamelv=0` difficulty crash, the frame limiter, and the ESC dialog). The
+reconstruction handles each one in native code instead of patching the original
+executable; the details are in `recreated\docs\NOTES.txt`. You can still run
+`original\bgw.exe` from inside `original\` to compare against the original
+behaviour.
 
 `original\readme.txt` is the original Shift-JIS readme; `original\readme.en.txt`
 is an English translation.

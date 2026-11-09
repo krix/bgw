@@ -76,18 +76,20 @@ No rendering difference remains in the compared states. Player-hidden behaviour
 after a fall miss is handled by deactivating the player render link, as
 `FUN_00454214` does in the shipped code.
 
-`original\bgw.exe` is the working copy carrying the four Win11 fixups
-documented in `NOTES.txt`; `original\bgw-pristine.exe` is the pristine 2001
-binary. Menu, option, and ranking frames were re-verified against the pristine
-binary as well (0 px), so the fixups do not affect rendering.
+`original\` is the untouched pre-project state and is never modified by this
+project. `original\bgw.exe` is the pristine 2001 binary; the four Windows 11
+fixups documented in `NOTES.txt` are implemented in the native port instead.
+Menu, option, and ranking frames were verified against the original binary
+(0 px).
 
 High-score persistence matches the shipped binary: `insertRankScore` and
 `writeRankNameByte` only update the in-memory table, and `writeRankFile` runs
 after the main loop exits. Only a graceful `WM_CLOSE` rewrites
 `data\rank.dat` (verified byte-identical on a clean shutdown). The capture
-harness terminates the process, so test runs never save. Both
-`original\data\rank.dat` and `build\data\rank.dat` hold the pristine
-`34300 "KRI"` + nine zero records (MD5 `5a1d1c1d0b05dc69a1c4016487ae37d2`).
+harness terminates the process, so test runs never save.
+`build\data\rank.dat` holds the pristine `34300 "KRI"` + nine zero records
+(MD5 `5a1d1c1d0b05dc69a1c4016487ae37d2`); `original\data\rank.dat` is the
+zeroed table that shipped in the restored pre-project original.
 `FormDestroy` also rewrites `game.ini`; the native's `writeIniSettings` now
 mirrors that (see "Difficulty selection and config persistence").
 

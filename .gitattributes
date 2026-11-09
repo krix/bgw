@@ -2,7 +2,8 @@
 
 # Preserve the original release files byte-for-byte.
 original/readme.txt -text
-original/game.ini.orig -text
+original/readme.en.txt -text
+original/game.ini -text
 original/data/*.dat binary
 original/map/*mpi binary
 build/data/*.dat binary
