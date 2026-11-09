@@ -52,7 +52,7 @@ PATCHES ALREADY APPLIED TO bgw.exe (Win11 fixups)
   untouched 2001 binary.
 
 NATIVE RECONSTRUCTION STATUS (2026-10-25)
-  Target : recreated\src\*.cpp -> build\bgw_native.exe
+  Target : recreated\src\*.cpp -> build\bgw.exe
            build: powershell -ExecutionPolicy Bypass -File recreated\build-win32.ps1
   Icon   : src\bgw.rc + src\bgw.ico, the original bgw.exe RT_GROUP_ICON
            "MAINICON" (32x32, 4bpp), used as the large and small window icon.
@@ -163,7 +163,7 @@ RECOVERY METHOD (as actually used)
     C:\mingw64\bin\objdump.exe  instruction-level checks of patched bytes
     recreated\docs\*.txt        anchors and structure notes
   Workflow: decompile a routine -> reimplement it in C++ under recreated\src ->
-  build bgw_native.exe -> capture the original and the native with the same
+  build bgw.exe -> capture the original and the native with the same
   key sequence -> pixel-compare -> fix only what the evidence shows.
   Remaining work, if any, is outside rendering: audio timing and the web port.
 
@@ -180,7 +180,7 @@ CURRENT RECOVERY OUTPUT
   src/data_layout.h  Partial recovered layouts for the 0x200-entry entity pool,
                      ten-entry score table, and tile-map/sprite coordinates.
   src/entity_behavior.* Recovered mode 1-4 entity update layer and pool.
-  build\bgw_native.exe
+  build\bgw.exe
                        Win32 reconstruction; built by build-win32.ps1. See
                        NATIVE_STATUS.md for architecture and verification.
   web/                 Dependency-free Canvas browser port using original BMP

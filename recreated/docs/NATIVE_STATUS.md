@@ -5,7 +5,7 @@ Two native targets are built from the recovered C++ sources:
 - **Console probe** (`build-native.ps1`): loads the original asset, sprite, and
   map data and drives the recovered state machine without presentation.
 - **Win32 presentation target** (`build-win32.ps1`):
-  `build\bgw_native.exe`, the reconstruction used for pixel-level
+  `build\bgw.exe`, the reconstruction used for pixel-level
   verification. It renders the complete title/menu flow, option page, ranking
   page, gameplay field and HUD, miss/game-over overlay, name entry, rank
   display, and the state-10 clear/scoreboard sequence.

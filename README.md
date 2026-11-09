@@ -55,7 +55,7 @@ BGW/
 │   ├── docs/
 │   ├── build-win32.ps1
 │   └── build-native.ps1
-├── build/        Final runnable reconstruction: bgw_native.exe plus the
+├── build/        Final runnable reconstruction: bgw.exe plus the
 │                 assets it loads and a default game.ini.
 ├── web/          Optional dependency-free Canvas browser port.
 ├── tools/        Ghidra helper scripts used during analysis.
@@ -68,14 +68,14 @@ holds the finished runnable build.
 
 ## Running the reconstruction
 
-Run `build\bgw_native.exe`. It is a self-contained 64-bit Windows executable
+Run `build\bgw.exe`. It is a self-contained 64-bit Windows executable
 (statically linked MinGW runtime), so no MinGW DLLs are required.
 
 Keep the asset folders next to the executable:
 
 ```
 build\
-├── bgw_native.exe
+├── bgw.exe
 ├── game.ini
 ├── bmp\  data\  map\  midi\  wav\
 ```
@@ -109,7 +109,7 @@ powershell -ExecutionPolicy Bypass -File recreated\build-win32.ps1
 ```
 
 This compiles the sources, embeds the original application icon from
-`recreated\src\bgw.rc` / `bgw.ico`, and writes **`build\bgw_native.exe`**.
+`recreated\src\bgw.rc` / `bgw.ico`, and writes **`build\bgw.exe`**.
 
 Build and run the console probe:
 

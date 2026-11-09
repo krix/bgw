@@ -4,7 +4,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $compiler = "C:\mingw64\bin\g++.exe"
 $windres = "C:\mingw64\bin\windres.exe"
 $outputDir = Join-Path $root "build"
-$output = Join-Path $outputDir "bgw_native.exe"
+$output = Join-Path $outputDir "bgw.exe"
 $resource = Join-Path $PSScriptRoot "bgw_res.o"
 $sourceDir = Join-Path $PSScriptRoot "src"
 
