@@ -163,6 +163,7 @@ so the asset paths resolve to `build\bmp`, `build\wav`, and `build\map`.
   close, matching the original `FormDestroy` behavior.
 - **Rendering.** GDI replaces DirectDraw. The presentation is 320×240 with
   nearest-neighbor scaling.
+- **Window title.** The native window is titled `Bunguru WA`.
 
 Detailed evidence, routine addresses, patch notes, and the verification method
 live in:

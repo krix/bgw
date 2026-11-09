@@ -1534,13 +1534,14 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR commandLine, int showCom
 
         RECT windowRect{0, 0, kWidth * 2, kHeight * 2};
         AdjustWindowRect(&windowRect, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, FALSE);
-        app.window = CreateWindowExW(0, windowClass.lpszClassName, L"BGW Native Reconstruction",
+        app.window = CreateWindowExW(0, windowClass.lpszClassName, L"Bunguru WA",
                                      WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
                                      CW_USEDEFAULT, CW_USEDEFAULT,
                                      windowRect.right - windowRect.left,
                                      windowRect.bottom - windowRect.top,
                                      nullptr, nullptr, instance, &app);
         if (!app.window) throw std::runtime_error("CreateWindowEx failed");
+        SetWindowTextW(app.window, L"Bunguru WA");
         if (appIcon) {
             SendMessageW(app.window, WM_SETICON, ICON_BIG,
                          reinterpret_cast<LPARAM>(appIcon));
