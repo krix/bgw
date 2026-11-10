@@ -1,31 +1,123 @@
 :root {
   color-scheme: dark;
-  font-family: system-ui, sans-serif;
-  background: #10131b;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 50% 0%, #223252 0%, #10131b 55%, #080a0f 100%);
+  color: #e8e1c8;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   display: grid;
   place-items: center;
+  padding: 24px 12px;
 }
 
 main {
+  width: min(100%, 980px);
   text-align: center;
 }
 
+header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f4e7b8;
+  text-shadow: 0 2px 0 #6b4d1d, 0 0 24px #e9c56a44;
+}
+
+.subtitle {
+  margin: 4px 0 18px;
+  color: #9aa4ba;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.screen {
+  display: inline-block;
+  padding: 6px;
+  border: 2px solid #d8c89a;
+  border-radius: 6px;
+  background: #050608;
+  box-shadow:
+    0 0 0 4px #1a2233,
+    0 18px 60px #000a,
+    0 0 48px #e9c56a18;
+}
+
 canvas {
-  width: min(96vw, 960px);
+  display: block;
+  width: min(92vw, 960px);
   height: auto;
+  aspect-ratio: 4 / 3;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  border: 4px solid #d8c89a;
-  background: #17233b;
-  box-shadow: 0 16px 48px #0009;
+  background: #000;
 }
 
 .hint {
+  margin: 16px auto 0;
+  max-width: 720px;
   color: #d8c89a;
   font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.controls {
+  margin: 18px auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  min-width: 64px;
+  padding: 12px 16px;
+  border: 1px solid #d8c89a66;
+  border-radius: 8px;
+  background: linear-gradient(#26324a, #171e2c);
+  color: #f4e7b8;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  touch-action: none;
+  user-select: none;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #0a0d14;
+}
+
+.controls button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #0a0d14;
+  background: linear-gradient(#1b2434, #10151f);
+}
+
+.note {
+  margin: 18px auto 0;
+  max-width: 680px;
+  color: #7f8aa0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+code {
+  color: #cfd8ea;
+  background: #ffffff10;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .controls {
+    opacity: 0.55;
+  }
 }

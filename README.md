@@ -144,15 +144,42 @@ smaller runtime.
 
 ## Web port
 
-`web/` contains a small Canvas/JavaScript port that loads the same BMP, WAV, and
-map assets from `build/`.
+`web/` contains a dependency-free Canvas/JavaScript port of the reconstruction.
+It loads the same BMP, WAV, MIDI, and map assets directly from `build/`, so it
+runs without a build step or third-party packages.
 
 ```powershell
 node web/server.mjs
 ```
 
-Then open <http://127.0.0.1:8123/web/>. The server serves the repository root,
-so the asset paths resolve to `build\bmp`, `build\wav`, and `build\map`.
+Then open <http://127.0.0.1:8080/web/>. The server serves the repository root, so
+the asset paths resolve to `build/bmp`, `build/wav`, `build/midi`, and
+`build/map`. Set `PORT` to use a different port. Serving the repository root is
+required: opening `web/index.html` from the filesystem (or serving only `web/`)
+cannot reach `../build/`.
+
+The port reproduces the native game loop, physics, entity effects, HUD, menus,
+options, ranking, name entry, and the clear/scoreboard sequence. Rendering is
+pixel-identical to the native build on every stable screen (title/menu, options,
+ranking page, gameplay field and HUD, start banner, miss, game over, name entry,
+rank display, and post-clear). Web-specific details:
+
+- **Input.** Arrow keys move and navigate, Space or Ctrl jumps, Space/Z/X
+  confirm, and Esc backs out. On-screen buttons provide touch controls. The
+  option screen cycles the jump-button assignment with left/right.
+- **Audio.** A small MIDI parser and Web Audio synthesizer play `init`, `main`,
+  `miss`, `gameover`, `rank`, and `clear`, with the WAV effects decoded through
+  Web Audio. Audio starts on the first key or pointer press (browser autoplay
+  policy). If Web Audio is unavailable, the game still advances using the track
+  durations.
+- **Persistence.** Settings and the ten-entry ranking table are stored in
+  `localStorage` (`bgw.settings.v1` and `bgw.rank.v1`). Clearing site data
+  restores the shipped defaults from `build/data/rank.dat`.
+- **EXIT.** The menu EXIT item shows an `EXIT ESC KEY` overlay and returns to the
+  menu instead of closing the tab.
+
+`web/game.js` exposes a small `window.__bgw` handle for debugging and automated
+smoke tests; the game does not depend on it.
 
 ## Reconstruction notes
 
